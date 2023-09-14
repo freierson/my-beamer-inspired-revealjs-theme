@@ -1,0 +1,238 @@
+---
+title: "Dynamic Linear Models: Case Studies"
+author: Filip Reierson
+date: 2023-08-23
+date-format: 'YYYY'
+format: 
+  revealjs:
+    theme: [default, theme.scss]
+    html-math-method: mathml
+    margin-left: '3rem'
+history: false
+navigation-mode: linear
+controls: false
+slide-number: true
+progress: true
+menu: true
+smaller: true
+scrollable: false
+margin: 0.1
+revealOptions:
+  width: 1280
+  height: 720
+disable-layout: false
+transition: fade
+transition-speed: default
+fig-format: svg
+# embed-resources: true # doesn't work
+---
+
+```{r}
+library(dlm)
+library(tidyverse)
+library(latex2exp)
+theme_set(theme_classic(base_size = 25))
+```
+
+# Bayesian techniques
+
+## Simulation techniques
+
+-   Gibbs sampler
+-   Metropolis-Hastings algorithm
+-   Adaptive rejection Metropolis sampling
+
+## Adaptive rejection Metropolis sampling
+
+-   Modified example from book
+-   Sampling from bivariate mixture of $\mathcal{N}_2((-4,-4)^\top,I_2)$
+    and $\mathcal{N}_2((4,4)^\top,I_2)$.
+
+::: {layout-ncol="2"}
+::: column
+```{r}
+#| echo: true
+bimodal <- function(x)
+  log(prod(dnorm(x, mean = 5)) +
+        prod(dnorm(x, mean = -5)))
+supp <- function(x)
+  all(x > -30) * all(x < 30)
+y <- arms(c(2, 4), bimodal, supp, 500)
+```
+:::
+
+::: column
+```{r}
+#| echo: true
+density_data <- expand.grid(x = seq(-10, 10, 
+                         length.out = 100),
+                 y = seq(-10, 10, 
+                         length.out = 100)) |>
+  rowwise() |>
+  mutate(pdf = exp(bimodal(c(x, y))))
+```
+:::
+:::
+
+::: {layout-ncol="2"}
+::: column
+```{r}
+#| fig-height: 5.5
+as.data.frame(y, row.names = NA) |>
+  ggplot(aes(V1, V2)) +
+  geom_point(pch = 1) +
+  labs(x=TeX('$X_1$'),y=TeX('$X_2$')) +
+  coord_equal()
+```
+:::
+
+::: column
+```{r}
+#| fig-height: 5.5
+density_data |>
+  ggplot(aes(x, y, z = pdf)) +
+  geom_contour() +
+  labs(x = 'x', y = 'y') +
+  coord_equal()
+```
+:::
+:::
+
+# Motivating examples
+
+
+## Nelson-Plosser
+
+```{r}
+#| echo: true
+data("NelPlo", package='dlm')
+plot(NelPlo, main='')
+```
+
+## About the data
+
+::: {layout-ncol="2"}
+- A time series of industrial production.
+- A time series of the S&P 500 index.
+- The series are 100 times the first differences of log-transformed values.
+    - For the S&P series, this is approximately equivalent to percentage returns, as long as returns are relatively low.
+- Domain: 1946 to 1988.
+
+```{r}
+#| fig-height: 8.5
+library(scales)
+data.frame(r = log(1+0:100/100), R=0:100/100) |>
+  ggplot(aes(r, R)) + 
+    geom_line() +
+    geom_abline(intercept = 0, slope = 1, lty=2) +
+    scale_x_continuous(labels = percent_format(1)) +
+    scale_y_continuous(labels = percent_format(1)) +
+    coord_equal() +
+    labs(title=TeX('$log(1+R)\\approx R$'),
+         x='log(1+R)',y='R')
+```
+:::
+
+------------------------------------------------------------------------
+
+```{r}
+#| echo: true
+data("USecon", package='dlm')
+plot(USecon)
+```
+
+---
+
+## About the data
+
+- A time series of seasonally adjusted real U.S. money supply (M1).
+- A time series of Gross National Product (GNP).
+- The series are 100 times the first differences of log-transformed values.
+- Domain: 1978 to 1987. 
+
+# The model
+
+---
+
+## Structure
+
+### General state space form
+
+$$
+\begin{split}
+Y_t&=h_t(\theta_t,v_t) \\
+\theta_t&=g_t(\theta_{t-1},w_t)
+\end{split}
+$$
+
+### Dynamic linear model
+
+$$
+\begin{split}
+Y_t&=F_t \theta_t + v_t & \qquad v_t \sim N_m(0,V_t) \\
+\theta_t&=G_t \theta_{t-1} + w_t & \qquad w_t \sim N_p(0,W_t)
+\end{split}
+$$
+
+#### DLM example: Random walk
+
+$$
+\begin{split}
+Y_t&=\mu_t + v_t & \qquad v_t \sim N(0,V)\\
+\mu_t&=\mu_{t-1} + w_t & \qquad w_t \sim N(0,W)
+\end{split}
+$$
+
+## Simulation: Random walk
+
+Let $V=3^2, W=1^2, Y_0=10$. 
+
+```{r}
+library(patchwork)
+```
+
+```{r}
+#| fig-height: 8
+#| fig-align: center
+set.seed(42)
+Y0 <- 10
+wt <- rnorm(100, sd = 1)
+vt <- rnorm(100, sd = 3)
+dat <- data.frame(
+  t = 1:100,
+  Y = Y0 + cumsum(wt) + vt,
+  vt = vt,
+  wt = wt
+)
+p1 <- dat |>
+  ggplot(aes(t,Y)) +
+    geom_line() +
+    geom_line(aes(y=Y0+cumsum(wt)), lty=1, color='darkgreen') +
+    labs(y=TeX('$Y_t$')) +
+    theme(axis.title.x.bottom = element_blank())
+p2 <- dat |>
+  ggplot(aes(t,vt)) +
+    geom_point(color='red', size=.5) +
+    geom_linerange(aes(ymin=0,ymax=vt), color='red') +
+    geom_hline(yintercept = 0, alpha=.5) +
+    labs(y=TeX('$v_t$')) +
+    theme(axis.title.x.bottom = element_blank())
+p3 <- dat |>
+  ggplot(aes(t,wt)) +
+    geom_segment(aes(x=t,xend=t,y=0,yend=wt), color='darkgreen',
+                  arrow = arrow(length = unit(0.2, "cm"))) +
+    geom_hline(yintercept = 0, alpha=.5) +
+    labs(y=TeX('$w_t$'))
+p1/p2/p3
+```
+
+
+------------------------------------------------------------------------
+
+## References
+
+
+
+
+
+
