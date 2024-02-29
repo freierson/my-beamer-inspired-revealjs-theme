@@ -13,7 +13,7 @@ history: false
 navigation-mode: linear
 controls: false
 slide-number: true
-progress: true
+progress: false
 menu: false
 smaller: true
 scrollable: false
