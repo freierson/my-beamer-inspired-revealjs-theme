@@ -1,0 +1,86 @@
+---
+title: "Beamer Revealjs Theme"
+date: 2024-2-29
+author: Filip Reierson
+date-format: 'YYYY'
+format: 
+  revealjs:
+    theme: [default, theme.scss]
+    css: theme.css
+    html-math-method: mathml
+    margin-left: '3rem'
+history: false
+navigation-mode: linear
+controls: false
+slide-number: true
+progress: true
+menu: true
+smaller: true
+scrollable: false
+margin: 0.1
+revealOptions:
+  width: 1280
+  height: 720
+disable-layout: false
+transition: fade
+transition-speed: default
+fig-format: svg
+embed-resources: true
+---
+
+# Section title
+
+## Subsection title A
+
+-   A
+-   B
+-   C
+
+## Subsection title B
+
+```{r}
+#| fig-height: 8
+#| fig-align: center
+#| fig-cap: A random walk with noise
+library(ggplot2)
+theme_set(theme_classic(base_size = 25))
+library(latex2exp)
+library(patchwork)
+set.seed(42)
+Y0 <- 10
+wt <- rnorm(100, sd = 1)
+vt <- rnorm(100, sd = 3)
+dat <- data.frame(
+  t = 1:100,
+  Y = Y0 + cumsum(wt) + vt,
+  vt = vt,
+  wt = wt
+)
+p1 <- dat |>
+  ggplot(aes(t,Y)) +
+    geom_line() +
+    geom_line(aes(y=Y0+cumsum(wt)), lty=1, color='darkgreen') +
+    labs(y=TeX('$Y_t$')) +
+    theme(axis.title.x.bottom = element_blank())
+p2 <- dat |>
+  ggplot(aes(t,vt)) +
+    geom_point(color='red', size=.5) +
+    geom_linerange(aes(ymin=0,ymax=vt), color='red') +
+    geom_hline(yintercept = 0, alpha=.5) +
+    labs(y=TeX('$v_t$')) +
+    theme(axis.title.x.bottom = element_blank())
+p3 <- dat |>
+  ggplot(aes(t,wt)) +
+    geom_segment(aes(x=t,xend=t,y=0,yend=wt), color='darkgreen',
+                  arrow = arrow(length = unit(0.2, "cm"))) +
+    geom_hline(yintercept = 0, alpha=.5) +
+    labs(y=TeX('$w_t$'))
+p1/p2/p3
+```
+
+
+
+
+
+
+

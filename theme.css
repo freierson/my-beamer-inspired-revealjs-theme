@@ -1,0 +1,68 @@
+@font-face {
+  font-family: "Computer Modern";
+  src: url('fonts/cmunss.ttf');
+}
+@font-face {
+  font-family: "Computer Modern";
+  src: url('fonts/cmunsx.ttf');
+  font-weight: bold;
+}
+@font-face {
+  font-family: "Computer Modern";
+  src: url('fonts/cmunsi.ttf');
+  font-style: italic, oblique;
+}
+
+.slides {
+  outline-style: solid;
+  outline-offset: 1rem;
+  outline-width: 1px;
+  outline-color: #000;
+}
+
+.reveal h1,
+.reveal h2,
+.reveal h3,
+.reveal h4,
+.reveal h5,
+.reveal h6 {
+  font-weight: normal !important;
+  margin-bottom: 1rem !important;
+  margin-left: 0.5rem !important;
+  margin-top: 0.5rem !important;
+}
+
+.reveal h1 {
+  font-size: 2.5rem !important;
+  margin-bottom: 3rem !important;
+  text-align: center !important;
+}
+
+.reveal h2 {
+  font-size: 2.5rem !important;
+  margin-bottom: 3rem !important;
+}
+
+.reveal h3 {
+  font-size: 1.75rem !important;
+}
+
+.reveal h4 {
+  font-size: 1.25rem !important;
+  font-weight: bold !important;
+}
+
+@media print {
+  .slides {
+    box-shadow: 0px 0px 0px;
+    border-style: none;
+  }
+}
+
+.quarto-title-author-name {
+  font-size: 1.5rem !important;
+}
+
+.date {
+  font-size: 1.5rem !important; 
+}
