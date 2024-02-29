@@ -14,7 +14,7 @@ navigation-mode: linear
 controls: false
 slide-number: true
 progress: true
-menu: true
+menu: false
 smaller: true
 scrollable: false
 margin: 0.1
